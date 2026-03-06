@@ -97,8 +97,8 @@ export default function Home() {
             >
               <div
                 className={`max-w-[85%] md:max-w-[75%] rounded-xl p-4 shadow-sm backdrop-blur-sm ${msg.role === "user"
-                    ? "bg-slate-800/80 text-slate-100 border border-slate-700/50 rounded-br-sm"
-                    : "bg-gradient-to-br from-indigo-950/40 to-slate-900/80 text-amber-50 border border-indigo-900/30 rounded-bl-sm font-serif text-lg leading-relaxed shadow-indigo-950/20"
+                  ? "bg-slate-800/80 text-slate-100 border border-slate-700/50 rounded-br-sm"
+                  : "bg-gradient-to-br from-indigo-950/40 to-slate-900/80 text-amber-50 border border-indigo-900/30 rounded-bl-sm font-serif text-lg leading-relaxed shadow-indigo-950/20"
                   }`}
               >
                 {msg.role === "model" && (
@@ -135,8 +135,9 @@ export default function Home() {
         <div className="max-w-4xl mx-auto flex gap-3">
           <input
             type="text"
+            suppressHydrationWarning
             className="flex-1 bg-slate-950/50 border border-slate-700/50 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-transparent placeholder-slate-500 text-slate-100 transition-all font-sans"
-            placeholder="Dichiara le tue azioni avventuriero..."
+            placeholder="Dichiara le tue azioni, avventuriero..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
