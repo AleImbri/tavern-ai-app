@@ -58,7 +58,7 @@ export default function LoginPage() {
                         TavernAI
                     </h1>
                     <p className="text-slate-400 italic font-serif">
-                        Unisciti alla nostra gilda avventuriero.
+                        Unisciti alla nostra gilda, avventuriero!
                     </p>
                 </div>
 
