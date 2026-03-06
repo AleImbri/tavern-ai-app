@@ -1,19 +1,18 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
+import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 type Message = {
+  id?: string;
   role: "user" | "model";
   content: string;
 };
 
 export default function Home() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "model",
-      content: "Benvenuti coraggiosi avventurieri! Siete pronti a iniziare il vostro viaggio? Ditemi chi siete e da dove venite.",
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -26,16 +25,34 @@ export default function Home() {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    const q = query(collection(db, "campaign_messages"), orderBy("timestamp", "asc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const msgs: Message[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        role: doc.data().role,
+        content: doc.data().content,
+      }));
+      setMessages(msgs);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    const userMessage: Message = { role: "user", content: input };
-    setMessages((prev) => [...prev, userMessage]);
+    const userInput = input;
     setInput("");
     setIsLoading(true);
 
     try {
-      // Format history for Gemini SDK
+      // 1. Save user message to Firestore
+      await addDoc(collection(db, "campaign_messages"), {
+        role: "user",
+        content: userInput,
+        timestamp: serverTimestamp(),
+      });
       const history = messages.map(msg => ({
         role: msg.role,
         parts: [{ text: msg.content }]
@@ -48,14 +65,19 @@ export default function Home() {
         },
         body: JSON.stringify({
           history,
-          message: input,
+          message: userInput,
         }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        setMessages((prev) => [...prev, { role: "model", content: data.response }]);
+        // 2. Save model response to Firestore
+        await addDoc(collection(db, "campaign_messages"), {
+          role: "model",
+          content: data.response,
+          timestamp: serverTimestamp(),
+        });
       } else {
         console.error("API Error:", data.error);
         setMessages((prev) => [...prev, { role: "model", content: "*(Una forza oscura impedisce al DM di comunicare... Riprova più tardi)*" }]);
@@ -109,8 +131,10 @@ export default function Home() {
                     Dungeon Master
                   </div>
                 )}
-                {/* Prevent hydration missing tags issue if HTML string comes through, but simple whitespace matching for text */}
-                <div className="whitespace-pre-wrap">{msg.content}</div>
+                {/* Use ReactMarkdown to render the content */}
+                <div className="prose prose-invert prose-amber max-w-none font-serif leading-relaxed">
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                </div>
               </div>
             </div>
           ))}
