@@ -18,8 +18,24 @@ export async function POST(req: NextRequest) {
             systemInstruction: SYSTEM_INSTRUCTION
         });
 
+        // 1. Ensure history starts with 'user'
+        // 2. Ensure roles alternate strictly
+        let validHistory: any[] = [];
+        let expectedRole = 'user';
+
+        for (const msg of (history || [])) {
+            if (msg.role === expectedRole) {
+                // deep copy to avoid mutating original request object just in case
+                validHistory.push({ role: msg.role, parts: [{ text: msg.parts[0].text }] });
+                expectedRole = expectedRole === 'user' ? 'model' : 'user';
+            } else if (msg.role !== expectedRole && validHistory.length > 0) {
+                // merge consecutive messages of the same role
+                validHistory[validHistory.length - 1].parts[0].text += "\n\n [System Note: The following was added consecutively:] \n\n" + msg.parts[0].text;
+            }
+        }
+
         const chat = model.startChat({
-            history: history || [],
+            history: validHistory,
         });
 
         const result = await chat.sendMessage(message);
