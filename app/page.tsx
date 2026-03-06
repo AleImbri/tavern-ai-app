@@ -25,9 +25,21 @@ export default function Home() {
     scrollToBottom();
   }, [messages]);
 
+  const hasInitializedRef = useRef(false);
+
   useEffect(() => {
     const q = query(collection(db, "campaign_messages"), orderBy("timestamp", "asc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
+      // Auto-initialize if empty
+      if (snapshot.empty && !hasInitializedRef.current) {
+        hasInitializedRef.current = true;
+        addDoc(collection(db, "campaign_messages"), {
+          role: "model",
+          content: "Benvenuti coraggiosi avventurieri! Siete pronti a iniziare il vostro viaggio? Ditemi chi siete e da dove venite.",
+          timestamp: serverTimestamp(),
+        }).catch(console.error);
+      }
+
       const msgs: Message[] = snapshot.docs.map((doc) => ({
         id: doc.id,
         role: doc.data().role,
