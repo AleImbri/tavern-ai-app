@@ -22,6 +22,7 @@ export default function DashboardPage() {
     const [isCreating, setIsCreating] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
+    const [validationError, setValidationError] = useState("");
 
     useEffect(() => {
         if (!loading && !user) {
@@ -56,7 +57,18 @@ export default function DashboardPage() {
 
     const createCampaign = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newCampaignTitle.trim() || !user) return;
+
+        const title = newCampaignTitle.trim();
+        if (!title || !user) return;
+
+        const isDuplicate = campaigns.some(
+            camp => camp.title.toLowerCase() === title.toLowerCase()
+        );
+
+        if (isDuplicate) {
+            setValidationError("Hai già un'avventura con questo nome.");
+            return;
+        }
 
         setIsCreating(true);
         try {
@@ -150,7 +162,10 @@ export default function DashboardPage() {
                             type="text"
                             required
                             value={newCampaignTitle}
-                            onChange={(e) => setNewCampaignTitle(e.target.value)}
+                            onChange={(e) => {
+                                setNewCampaignTitle(e.target.value);
+                                if (validationError) setValidationError("");
+                            }}
                             className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-600/50 text-slate-100 placeholder-slate-600 font-sans transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             placeholder="Es. Il Ritrovamento di Phandalin..."
                             disabled={isCreating || campaigns.length >= 10}
@@ -170,6 +185,11 @@ export default function DashboardPage() {
                             )}
                         </button>
                     </form>
+                    {validationError && (
+                        <p className="mt-4 text-sm text-red-400/90 font-serif italic text-center">
+                            {validationError}
+                        </p>
+                    )}
                     {campaigns.length >= 10 && (
                         <p className="mt-4 text-sm text-red-400/90 font-serif italic text-center">
                             Hai raggiunto il limite massimo. Elimina una vecchia avventura per poterne iniziare di nuove.
