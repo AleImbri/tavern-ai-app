@@ -20,6 +20,8 @@ export default function DashboardPage() {
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
     const [newCampaignTitle, setNewCampaignTitle] = useState("");
     const [isCreating, setIsCreating] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
 
     useEffect(() => {
         if (!loading && !user) {
@@ -72,16 +74,28 @@ export default function DashboardPage() {
         }
     };
 
-    const deleteCampaign = async (e: React.MouseEvent, id: string) => {
+    const initiateDelete = (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
         e.preventDefault();
-        if (window.confirm("Sei sicuro di voler distruggere questa iterazione della storia? Un'intera linea temporale andrà perduta.")) {
-            try {
-                await deleteDoc(doc(db, "campaigns", id));
-            } catch (err) {
-                console.error("Errore durante la distruzione della campagna:", err);
-            }
+        setCampaignToDelete(id);
+        setIsModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!campaignToDelete) return;
+        try {
+            await deleteDoc(doc(db, "campaigns", campaignToDelete));
+        } catch (err) {
+            console.error("Errore durante l'eliminazione della campagna:", err);
+        } finally {
+            setIsModalOpen(false);
+            setCampaignToDelete(null);
         }
+    };
+
+    const cancelDelete = () => {
+        setIsModalOpen(false);
+        setCampaignToDelete(null);
     };
 
     if (loading || !user) {
@@ -125,7 +139,7 @@ export default function DashboardPage() {
                 <section className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl shadow-lg backdrop-blur-sm">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-serif font-bold text-amber-500 uppercase tracking-wide">
-                            Inizia una Nuova Avventura
+                            Crea una nuova campagna
                         </h2>
                         <span className="text-sm font-semibold text-slate-400 bg-slate-950/50 px-3 py-1 rounded-full border border-slate-800 shadow-inner">
                             Locande aperte: {campaigns.length}/10
@@ -152,7 +166,7 @@ export default function DashboardPage() {
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
                             ) : (
-                                "Esplora"
+                                "Crea"
                             )}
                         </button>
                     </form>
@@ -166,7 +180,7 @@ export default function DashboardPage() {
                 {/* Campaigns List */}
                 <section className="space-y-4">
                     <h2 className="text-xl font-serif font-bold text-slate-300 mb-6 flex items-center gap-2">
-                        Le tue Cronache <span className="px-2 py-0.5 bg-slate-800 rounded-full text-sm">{campaigns.length}</span>
+                        Le tue Cronache
                     </h2>
 
                     {campaigns.length === 0 ? (
@@ -185,9 +199,9 @@ export default function DashboardPage() {
                                 >
                                     <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button
-                                            onClick={(e) => deleteCampaign(e, camp.id)}
+                                            onClick={(e) => initiateDelete(e, camp.id)}
                                             className="text-slate-500 hover:text-red-400 bg-slate-950/80 p-2 rounded-lg transition-colors border border-transparent hover:border-red-900/50"
-                                            title="Distruggi"
+                                            title="Elimina"
                                         >
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                         </button>
@@ -208,6 +222,35 @@ export default function DashboardPage() {
                 </section>
 
             </main>
+
+            {/* Delete Modal */}
+            {isModalOpen && (
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-slate-900 border border-slate-700/60 rounded-2xl p-6 md:p-8 max-w-sm w-full shadow-2xl shadow-black/80">
+                        <h3 className="text-2xl font-serif font-bold text-amber-500 mb-2 truncate text-center tracking-wide">
+                            TavernAI
+                        </h3>
+                        <p className="text-slate-300 text-center mb-8 font-sans leading-relaxed">
+                            Sei sicuro di voler eliminare questa avventura? La tua storia andrà perduta nell'oblio per sempre.
+                        </p>
+
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <button
+                                onClick={cancelDelete}
+                                className="flex-1 py-3 px-4 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-slate-300 font-semibold transition-colors border border-slate-700 hover:border-slate-500"
+                            >
+                                Annulla
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                className="flex-1 py-3 px-4 rounded-lg bg-red-900/60 hover:bg-red-800/80 active:bg-red-950/80 text-red-200 font-bold transition-colors border border-red-800/40 hover:border-red-600/50"
+                            >
+                                Elimina Avventura
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
