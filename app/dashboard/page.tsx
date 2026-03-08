@@ -123,23 +123,28 @@ export default function DashboardPage() {
 
                 {/* Creation Section */}
                 <section className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl shadow-lg backdrop-blur-sm">
-                    <h2 className="text-xl font-serif font-bold text-amber-500 mb-4 uppercase tracking-wide">
-                        Inizia una Nuova Avventura
-                    </h2>
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-serif font-bold text-amber-500 uppercase tracking-wide">
+                            Inizia una Nuova Avventura
+                        </h2>
+                        <span className="text-sm font-semibold text-slate-400 bg-slate-950/50 px-3 py-1 rounded-full border border-slate-800 shadow-inner">
+                            Locande aperte: {campaigns.length}/10
+                        </span>
+                    </div>
                     <form onSubmit={createCampaign} className="flex flex-col md:flex-row gap-4">
                         <input
                             type="text"
                             required
                             value={newCampaignTitle}
                             onChange={(e) => setNewCampaignTitle(e.target.value)}
-                            className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-600/50 text-slate-100 placeholder-slate-600 font-sans transition-colors"
+                            className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-600/50 text-slate-100 placeholder-slate-600 font-sans transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             placeholder="Es. Il Ritrovamento di Phandalin..."
-                            disabled={isCreating}
+                            disabled={isCreating || campaigns.length >= 10}
                         />
                         <button
                             type="submit"
-                            disabled={isCreating || !newCampaignTitle.trim()}
-                            className="bg-gradient-to-b from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 active:from-amber-700 active:to-amber-800 text-amber-50 font-bold py-3 px-8 rounded-lg shadow-lg shadow-amber-900/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wide flex items-center justify-center min-w-[150px]"
+                            disabled={isCreating || !newCampaignTitle.trim() || campaigns.length >= 10}
+                            className="bg-gradient-to-b from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 active:from-amber-700 active:to-amber-800 text-amber-50 font-bold py-3 px-8 rounded-lg shadow-lg shadow-amber-900/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale uppercase tracking-wide flex items-center justify-center min-w-[150px]"
                         >
                             {isCreating ? (
                                 <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -151,6 +156,11 @@ export default function DashboardPage() {
                             )}
                         </button>
                     </form>
+                    {campaigns.length >= 10 && (
+                        <p className="mt-4 text-sm text-red-400/90 font-serif italic text-center">
+                            Hai raggiunto il limite massimo. Elimina una vecchia avventura per poterne iniziare di nuove.
+                        </p>
+                    )}
                 </section>
 
                 {/* Campaigns List */}
