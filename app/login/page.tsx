@@ -25,7 +25,7 @@ export default function LoginPage() {
             } else {
                 await createUserWithEmailAndPassword(auth, email, password);
             }
-            router.push("/");
+            router.push("/dashboard");
         } catch (err: any) {
             setError(err.message || "Errore di autenticazione");
         } finally {
@@ -40,7 +40,7 @@ export default function LoginPage() {
 
         try {
             await signInWithPopup(auth, provider);
-            router.push("/");
+            router.push("/dashboard");
         } catch (err: any) {
             setError(err.message || "Errore con l'accesso Google");
         } finally {
