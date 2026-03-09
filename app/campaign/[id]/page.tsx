@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
-import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, useParams } from "next/navigation";
@@ -17,6 +17,29 @@ export default function CampaignChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const [isCampaignLoading, setIsCampaignLoading] = useState(true);
+  const [isMessagesLoading, setIsMessagesLoading] = useState(true);
+  const [campaign, setCampaign] = useState<any>(null);
+
+  // Character Form State
+  const [charName, setCharName] = useState("");
+  const [charRace, setCharRace] = useState("Umano");
+  const [charClass, setCharClass] = useState("Guerriero");
+
+  const [stats, setStats] = useState({
+    forza: 10,
+    destrezza: 10,
+    costituzione: 10,
+    intelligenza: 10,
+    saggezza: 10,
+    carisma: 10,
+  });
+
+  const [background, setBackground] = useState("");
+  const [physicalDesc, setPhysicalDesc] = useState("");
+  const [isSavingChar, setIsSavingChar] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -43,28 +66,42 @@ export default function CampaignChat() {
   useEffect(() => {
     if (!campaignId) return;
 
-    const q = query(collection(db, "campaigns", campaignId, "messages"), orderBy("timestamp", "asc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      // Auto-initialize if empty
-      if (snapshot.empty && !hasInitializedRef.current) {
-        hasInitializedRef.current = true;
-        addDoc(collection(db, "campaigns", campaignId, "messages"), {
-          role: "model",
-          content: "Benvenuti coraggiosi avventurieri! Siete pronti a iniziare il vostro viaggio? Ditemi chi siete e da dove venite.",
-          timestamp: serverTimestamp(),
-        }).catch(console.error);
+    const unsubCampaign = onSnapshot(doc(db, "campaigns", campaignId), (docSnap) => {
+      if (docSnap.exists()) {
+        setCampaign(docSnap.data());
+      } else {
+        router.push("/dashboard");
       }
-
-      const msgs: Message[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        role: doc.data().role,
-        content: doc.data().content,
-      }));
-      setMessages(msgs);
+      setIsCampaignLoading(false);
     });
 
-    return () => unsubscribe();
-  }, []);
+    const q = query(collection(db, "campaigns", campaignId, "messages"), orderBy("timestamp", "asc"));
+    const unsubscribeMsgs = onSnapshot(q, (snapshot) => {
+      const msgs: Message[] = snapshot.docs.map((d) => ({
+        id: d.id,
+        role: d.data().role,
+        content: d.data().content,
+      }));
+      setMessages(msgs);
+      setIsMessagesLoading(false);
+    });
+
+    return () => {
+      unsubCampaign();
+      unsubscribeMsgs();
+    };
+  }, [campaignId, router]);
+
+  useEffect(() => {
+    if (!isCampaignLoading && !isMessagesLoading && campaign?.character && messages.length === 0 && !hasInitializedRef.current) {
+      hasInitializedRef.current = true;
+      addDoc(collection(db, "campaigns", campaignId, "messages"), {
+        role: "model",
+        content: "Benvenuti coraggiosi avventurieri! Siete pronti a iniziare il vostro viaggio? Ditemi chi siete e da dove venite.",
+        timestamp: serverTimestamp(),
+      }).catch(console.error);
+    }
+  }, [campaign, messages.length, isCampaignLoading, isMessagesLoading, campaignId]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -74,7 +111,6 @@ export default function CampaignChat() {
     setIsLoading(true);
 
     try {
-      // 1. Save user message to Firestore
       await addDoc(collection(db, "campaigns", campaignId, "messages"), {
         role: "user",
         content: userInput,
@@ -99,7 +135,6 @@ export default function CampaignChat() {
       const data = await res.json();
 
       if (res.ok) {
-        // 2. Save model response to Firestore
         await addDoc(collection(db, "campaigns", campaignId, "messages"), {
           role: "model",
           content: data.response,
@@ -124,7 +159,52 @@ export default function CampaignChat() {
     }
   };
 
-  if (loading || !user) {
+  const calculateMaxHp = (cClass: string, constitution: number) => {
+    const costMod = Math.floor((constitution - 10) / 2);
+    let baseHp = 8;
+    if (cClass === "Barbaro") baseHp = 12;
+    if (["Guerriero", "Paladino", "Ranger"].includes(cClass)) baseHp = 10;
+    if (["Mago", "Stregone"].includes(cClass)) baseHp = 6;
+    return baseHp + costMod;
+  };
+
+  const handleCreateCharacter = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!charName.trim() || !campaignId) return;
+
+    setIsSavingChar(true);
+    const maxHp = calculateMaxHp(charClass, stats.costituzione);
+
+    const characterData = {
+      name: charName.trim(),
+      race: charRace,
+      class: charClass,
+      stats: stats,
+      background: background.trim(),
+      physicalDescription: physicalDesc.trim(),
+      level: 1,
+      xp: 0,
+      gold: 0,
+      currentHp: maxHp,
+      maxHp: maxHp
+    };
+
+    try {
+      await updateDoc(doc(db, "campaigns", campaignId), {
+        character: characterData
+      });
+    } catch (err) {
+      console.error("Errore salvataggio personaggio:", err);
+    } finally {
+      setIsSavingChar(false);
+    }
+  };
+
+  const handleStatChange = (stat: string, value: string) => {
+    setStats(prev => ({ ...prev, [stat]: parseInt(value) || 10 }));
+  };
+
+  if (loading || isCampaignLoading || !user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-slate-200 font-sans">
         <div className="flex flex-col items-center space-y-6">
@@ -135,6 +215,133 @@ export default function CampaignChat() {
           <p className="text-xl font-serif italic text-amber-400/80 animate-pulse tracking-wide">
             Apertura delle porte della taverna...
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!campaign?.character) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-amber-700/50 flex flex-col items-center p-4 md:p-8">
+        <div className="w-full max-w-3xl bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-700/50 shadow-2xl shadow-black/80 p-6 md:p-10">
+          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 bg-clip-text text-transparent drop-shadow-sm uppercase tracking-widest font-serif text-center mb-2">
+            Forgia il tuo Destino
+          </h1>
+          <p className="text-slate-400 italic font-serif text-center mb-8">
+            Prima di sederti al tavolo del Master, definisci chi sei.
+          </p>
+
+          <form onSubmit={handleCreateCharacter} className="space-y-8">
+            {/* Base Info */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-serif text-amber-500 border-b border-slate-800 pb-2">Identità</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="col-span-1 md:col-span-3">
+                  <label className="block text-sm font-medium text-slate-400 mb-1">Nome</label>
+                  <input
+                    type="text"
+                    required
+                    value={charName}
+                    onChange={(e) => setCharName(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-amber-600/50 text-slate-100 placeholder-slate-600"
+                    placeholder="Eldrin, Thordak, o Seraphina..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-1">Razza</label>
+                  <select
+                    value={charRace}
+                    onChange={(e) => setCharRace(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-amber-600/50 text-slate-100"
+                  >
+                    {["Nano", "Elfo", "Halfling", "Umano", "Dragonide", "Gnomo", "Mezzelfo", "Mezzorco", "Tiefling"].map(r => (
+                      <option key={r} value={r}>{r}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-1">Classe</label>
+                  <select
+                    value={charClass}
+                    onChange={(e) => setCharClass(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-amber-600/50 text-slate-100"
+                  >
+                    {["Barbaro", "Bardo", "Chierico", "Druido", "Guerriero", "Ladro", "Mago", "Monaco", "Paladino", "Ranger", "Stregone", "Warlock"].map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-serif text-amber-500 border-b border-slate-800 pb-2">Caratteristiche Base</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {Object.keys(stats).map((stat) => (
+                  <div key={stat}>
+                    <label className="block text-sm font-medium text-slate-400 mb-1 capitalize">{stat}</label>
+                    <input
+                      type="number"
+                      required
+                      min={1}
+                      max={20}
+                      value={(stats as any)[stat]}
+                      onChange={(e) => handleStatChange(stat, e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-600/50 text-center text-slate-100 text-lg font-serif"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Lore */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-serif text-amber-500 border-b border-slate-800 pb-2">Storia e Volto (Opzionale)</h2>
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-1">Descrizione Fisica</label>
+                <textarea
+                  value={physicalDesc}
+                  onChange={(e) => setPhysicalDesc(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-amber-600/50 text-slate-100 placeholder-slate-600 h-24 resize-none"
+                  placeholder="Capelli corvini, una cicatrice sull'occhio destro..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-1">Background</label>
+                <textarea
+                  value={background}
+                  onChange={(e) => setBackground(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-amber-600/50 text-slate-100 placeholder-slate-600 h-32 resize-none"
+                  placeholder="Un orfano cresciuto in un'antica città..."
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => router.push("/dashboard")}
+                className="text-slate-400 hover:text-slate-300 transition-colors px-4 py-2"
+              >
+                Annulla
+              </button>
+              <button
+                type="submit"
+                disabled={isSavingChar || !charName.trim()}
+                className="bg-gradient-to-b from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 active:from-amber-700 active:to-amber-800 text-amber-50 font-bold py-3 px-8 rounded-lg shadow-lg shadow-amber-900/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wide flex justify-center items-center min-w-[200px]"
+              >
+                {isSavingChar ? (
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : (
+                  "Entra nella Taverna"
+                )}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     );
@@ -154,7 +361,7 @@ export default function CampaignChat() {
 
         <div className="flex items-center justify-center">
           <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 bg-clip-text text-transparent drop-shadow-sm uppercase tracking-widest font-serif">
-            TavernAI
+            {campaign?.title || "TavernAI"}
           </h1>
           <span className="ml-3 px-2 py-0.5 rounded text-xs font-semibold bg-amber-900/30 text-amber-500 border border-amber-800/50 hidden sm:inline-block">
             5E MASTER
