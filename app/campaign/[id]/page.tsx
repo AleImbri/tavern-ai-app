@@ -622,28 +622,28 @@ export default function CampaignChat() {
                 <div className="flex justify-around items-start">
                   {/* MR (Rame) */}
                   <div className="flex flex-col items-center">
-                    <Image src="/coins/copper.png" alt="Rame" width={48} height={48} className="w-12 h-12 object-contain hover:scale-110 transition-transform mb-2" />
+                    <Image src="/coins/copper.png" alt="Rame" width={80} height={80} className="w-20 h-20 object-contain hover:scale-110 transition-transform mb-2" />
                     <span className="text-[10px] text-slate-400 font-sans uppercase tracking-widest">MR</span>
                     <span className="text-sm text-slate-200 font-sans font-medium">{campaign.character?.coins?.cp || 0}</span>
                   </div>
 
                   {/* MA (Argento) */}
                   <div className="flex flex-col items-center">
-                    <Image src="/coins/silver.png" alt="Argento" width={48} height={48} className="w-12 h-12 object-contain hover:scale-110 transition-transform mb-2" />
+                    <Image src="/coins/silver.png" alt="Argento" width={80} height={80} className="w-20 h-20 object-contain hover:scale-110 transition-transform mb-2" />
                     <span className="text-[10px] text-slate-400 font-sans uppercase tracking-widest">MA</span>
                     <span className="text-sm text-slate-200 font-sans font-medium">{campaign.character?.coins?.sp || 0}</span>
                   </div>
 
                   {/* MO (Oro) */}
                   <div className="flex flex-col items-center">
-                    <Image src="/coins/gold.png" alt="Oro" width={48} height={48} className="w-12 h-12 object-contain hover:scale-110 transition-transform mb-2" />
+                    <Image src="/coins/gold.png" alt="Oro" width={80} height={80} className="w-20 h-20 object-contain hover:scale-110 transition-transform mb-2" />
                     <span className="text-[10px] text-slate-400 font-sans uppercase tracking-widest">MO</span>
                     <span className="text-sm text-slate-200 font-sans font-medium">{campaign.character?.coins?.gp || 0}</span>
                   </div>
 
                   {/* MP (Platino) */}
                   <div className="flex flex-col items-center">
-                    <Image src="/coins/platinum.png" alt="Platino" width={48} height={48} className="w-12 h-12 object-contain hover:scale-110 transition-transform mb-2" />
+                    <Image src="/coins/platinum.png" alt="Platino" width={80} height={80} className="w-20 h-20 object-contain hover:scale-110 transition-transform mb-2" />
                     <span className="text-[10px] text-slate-400 font-sans uppercase tracking-widest">MP</span>
                     <span className="text-sm text-slate-200 font-sans font-medium">{campaign.character?.coins?.pp || 0}</span>
                   </div>
