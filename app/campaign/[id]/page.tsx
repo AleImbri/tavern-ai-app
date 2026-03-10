@@ -710,49 +710,61 @@ export default function CampaignChat() {
                 <h3 className="text-xs font-serif font-bold text-slate-400 uppercase tracking-widest mb-4 text-center border-b border-slate-800/50 pb-2">Portamonete</h3>
                 <div className="grid grid-cols-2 gap-6 justify-items-center py-4">
                   {/* MR (Rame) */}
-                  <div
-                    className="flex flex-col items-center cursor-pointer"
-                    onPointerEnter={() => setInspectedCoin('copper')}
-                    onPointerLeave={() => setInspectedCoin(null)}
-                    onPointerCancel={() => setInspectedCoin(null)}
-                  >
-                    <Image src="/coins/copper.png" alt="Rame" width={144} height={144} className="w-36 h-36 object-contain scale-[1.5] hover:scale-[1.65] transition-transform mb-2 drop-shadow-lg" />
+                  <div className="flex flex-col items-center">
+                    <div className="relative mb-2">
+                      <div
+                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full z-10 cursor-pointer"
+                        onPointerEnter={() => setInspectedCoin('copper')}
+                        onPointerLeave={() => setInspectedCoin(null)}
+                        onPointerCancel={() => setInspectedCoin(null)}
+                      />
+                      <Image src="/coins/copper.png" alt="Rame" width={144} height={144} className="w-36 h-36 object-contain scale-[1.5] hover:scale-[1.65] transition-transform drop-shadow-lg" />
+                    </div>
                     <span className="text-[10px] text-slate-400 font-sans uppercase tracking-widest">MR</span>
                     <span className="text-sm text-slate-200 font-sans font-medium">{campaign.character?.coins?.cp || 0}</span>
                   </div>
 
                   {/* MA (Argento) */}
-                  <div
-                    className="flex flex-col items-center cursor-pointer"
-                    onPointerEnter={() => setInspectedCoin('silver')}
-                    onPointerLeave={() => setInspectedCoin(null)}
-                    onPointerCancel={() => setInspectedCoin(null)}
-                  >
-                    <Image src="/coins/silver.png" alt="Argento" width={144} height={144} className="w-36 h-36 object-contain scale-[1.5] hover:scale-[1.65] transition-transform mb-2 drop-shadow-lg" />
+                  <div className="flex flex-col items-center">
+                    <div className="relative mb-2">
+                      <div
+                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full z-10 cursor-pointer"
+                        onPointerEnter={() => setInspectedCoin('silver')}
+                        onPointerLeave={() => setInspectedCoin(null)}
+                        onPointerCancel={() => setInspectedCoin(null)}
+                      />
+                      <Image src="/coins/silver.png" alt="Argento" width={144} height={144} className="w-36 h-36 object-contain scale-[1.5] hover:scale-[1.65] transition-transform drop-shadow-lg" />
+                    </div>
                     <span className="text-[10px] text-slate-400 font-sans uppercase tracking-widest">MA</span>
                     <span className="text-sm text-slate-200 font-sans font-medium">{campaign.character?.coins?.sp || 0}</span>
                   </div>
 
                   {/* MO (Oro) */}
-                  <div
-                    className="flex flex-col items-center cursor-pointer"
-                    onPointerEnter={() => setInspectedCoin('gold')}
-                    onPointerLeave={() => setInspectedCoin(null)}
-                    onPointerCancel={() => setInspectedCoin(null)}
-                  >
-                    <Image src="/coins/gold.png" alt="Oro" width={144} height={144} className="w-36 h-36 object-contain scale-[1.5] hover:scale-[1.65] transition-transform mb-2 drop-shadow-lg" />
+                  <div className="flex flex-col items-center">
+                    <div className="relative mb-2">
+                      <div
+                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full z-10 cursor-pointer"
+                        onPointerEnter={() => setInspectedCoin('gold')}
+                        onPointerLeave={() => setInspectedCoin(null)}
+                        onPointerCancel={() => setInspectedCoin(null)}
+                      />
+                      <Image src="/coins/gold.png" alt="Oro" width={144} height={144} className="w-36 h-36 object-contain scale-[1.5] hover:scale-[1.65] transition-transform drop-shadow-lg" />
+                    </div>
                     <span className="text-[10px] text-slate-400 font-sans uppercase tracking-widest">MO</span>
                     <span className="text-sm text-slate-200 font-sans font-medium">{campaign.character?.coins?.gp || 0}</span>
                   </div>
 
                   {/* MP (Platino) */}
-                  <div
-                    className="flex flex-col items-center cursor-pointer"
-                    onPointerEnter={() => setInspectedCoin('platinum')}
-                    onPointerLeave={() => setInspectedCoin(null)}
-                    onPointerCancel={() => setInspectedCoin(null)}
-                  >
-                    <Image src="/coins/platinum.png" alt="Platino" width={144} height={144} className="w-36 h-36 object-contain scale-[1.5] hover:scale-[1.65] transition-transform mb-2 drop-shadow-lg" />
+                  <div className="flex flex-col items-center">
+                    <div className="relative mb-2">
+                      <div
+                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full z-10 cursor-pointer"
+                        onPointerEnter={() => setInspectedCoin('platinum')}
+                        onPointerLeave={() => setInspectedCoin(null)}
+                        onPointerCancel={() => setInspectedCoin(null)}
+                      />
+                      <Image src="/coins/platinum.png" alt="Platino" width={144} height={144} className="w-36 h-36 object-contain scale-[1.5] hover:scale-[1.65] transition-transform drop-shadow-lg" />
+                    </div>
                     <span className="text-[10px] text-slate-400 font-sans uppercase tracking-widest">MP</span>
                     <span className="text-sm text-slate-200 font-sans font-medium">{campaign.character?.coins?.pp || 0}</span>
                   </div>
@@ -785,13 +797,13 @@ export default function CampaignChat() {
 
       {/* Coin Inspection Lightbox */}
       {inspectedCoin && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md pointer-events-none transition-opacity duration-300">
+        <div className="fixed inset-0 z-[9999] pointer-events-none flex items-center justify-center">
           <Image
             src={`/coins/${inspectedCoin}.png`}
             alt="Coin Detail"
-            width={320}
-            height={320}
-            className="w-80 h-80 object-contain animate-in zoom-in duration-200 drop-shadow-2xl"
+            width={1000}
+            height={1000}
+            className="w-[1000px] h-[1000px] object-contain animate-in zoom-in duration-200 drop-shadow-2xl"
           />
         </div>
       )}
