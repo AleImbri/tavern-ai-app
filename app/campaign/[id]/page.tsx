@@ -22,6 +22,8 @@ export default function CampaignChat() {
   const [isMessagesLoading, setIsMessagesLoading] = useState(true);
   const [campaign, setCampaign] = useState<any>(null);
 
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
   // Character Form State
   const [charName, setCharName] = useState("");
   const [charRace, setCharRace] = useState("Umano");
@@ -157,6 +159,11 @@ export default function CampaignChat() {
       e.preventDefault();
       handleSend();
     }
+  };
+
+  const calculateModifier = (score: number) => {
+    const mod = Math.floor((score - 10) / 2);
+    return mod >= 0 ? `+${mod}` : `${mod}`;
   };
 
   const calculateMaxHp = (cClass: string, constitution: number) => {
@@ -363,13 +370,21 @@ export default function CampaignChat() {
           <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 bg-clip-text text-transparent drop-shadow-sm uppercase tracking-widest font-serif">
             {campaign?.title || "TavernAI"}
           </h1>
-          <span className="ml-3 px-2 py-0.5 rounded text-xs font-semibold bg-amber-900/30 text-amber-500 border border-amber-800/50 hidden sm:inline-block">
+          <span className="ml-3 px-2 py-0.5 rounded text-xs font-semibold bg-amber-900/30 text-amber-500 border border-amber-800/50 hidden md:inline-block">
             5E MASTER
           </span>
         </div>
 
-        {/* Empty div for flex balance against the back button */}
-        <div className="w-[100px] sm:w-[150px] hidden sm:block"></div>
+        <div className="flex justify-end min-w-[120px]">
+          <button
+            onClick={() => setIsSheetOpen(true)}
+            className="text-slate-300 hover:text-amber-400 font-serif flex items-center gap-2 transition-colors bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50 hover:bg-slate-800"
+            title="Scheda Personaggio"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+            <span className="hidden sm:inline text-sm font-semibold">Scheda</span>
+          </button>
+        </div>
       </header>
 
       {/* Chat Area */}
@@ -446,6 +461,119 @@ export default function CampaignChat() {
           </button>
         </div>
       </footer>
+
+      {/* Character Sheet Modal / Sidebar */}
+      {isSheetOpen && campaign?.character && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setIsSheetOpen(false)}
+          ></div>
+
+          {/* Sidebar */}
+          <div className="relative w-full max-w-md h-full bg-slate-900 border-l border-slate-700/80 shadow-2xl shadow-black overflow-y-auto flex flex-col transform transition-transform duration-300 ease-in-out">
+            <div className="p-4 border-b border-slate-800 flex justify-between items-center sticky top-0 bg-slate-900/95 backdrop-blur-md z-10">
+              <h2 className="text-xl font-serif font-bold text-amber-500 tracking-wider">
+                Scheda Personaggio
+              </h2>
+              <button
+                onClick={() => setIsSheetOpen(false)}
+                className="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg p-2 transition-colors"
+                title="Chiudi Scheda"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <div className="p-6 space-y-8 flex-1">
+              {/* Header Info */}
+              <div className="text-center pb-6 border-b border-slate-800">
+                <h3 className="text-3xl font-bold font-serif text-slate-100 mb-1">{campaign.character.name}</h3>
+                <p className="text-amber-600/90 font-sans tracking-widest text-sm uppercase">
+                  {campaign.character.race} {campaign.character.class}
+                </p>
+              </div>
+
+              {/* Tokens Grid */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-3 text-center flex flex-col justify-center">
+                  <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1">Livello</span>
+                  <span className="text-xl font-bold text-slate-200">{campaign.character.level}</span>
+                </div>
+                <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-3 text-center flex flex-col justify-center items-center">
+                  <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1">CA</span>
+                  <div className="relative w-8 h-10 flex items-center justify-center">
+                    <svg className="absolute inset-0 w-full h-full text-slate-700" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                    <span className="relative z-10 text-sm font-bold text-white">
+                      {10 + Math.floor((campaign.character.stats?.destrezza - 10) / 2)}
+                    </span>
+                  </div>
+                </div>
+                <div className="bg-slate-950/50 border border-red-900/30 rounded-lg p-3 text-center flex flex-col justify-center col-span-2">
+                  <span className="text-xs text-red-500/70 uppercase tracking-wider font-semibold mb-1">Punti Ferita</span>
+                  <span className="text-xl font-bold text-red-400">
+                    {campaign.character.currentHp} <span className="text-slate-500 text-sm">/ {campaign.character.maxHp}</span>
+                  </span>
+                </div>
+                <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-3 text-center flex flex-col justify-center">
+                  <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1">XP</span>
+                  <span className="text-lg font-bold text-slate-300">{campaign.character.xp}</span>
+                </div>
+                <div className="bg-slate-950/50 border border-yellow-900/30 rounded-lg p-3 text-center flex flex-col justify-center">
+                  <span className="text-xs text-yellow-600/70 uppercase tracking-wider font-semibold mb-1">Oro</span>
+                  <span className="text-lg font-bold text-yellow-500">{campaign.character.gold}</span>
+                </div>
+              </div>
+
+              {/* Core Stats */}
+              <div>
+                <h4 className="text-sm font-serif text-slate-400 border-b border-slate-800 pb-2 mb-4">Caratteristiche</h4>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: "Forza", key: "forza" },
+                    { label: "Destrezza", key: "destrezza" },
+                    { label: "Costituzione", key: "costituzione" },
+                    { label: "Intelligenza", key: "intelligenza" },
+                    { label: "Saggezza", key: "saggezza" },
+                    { label: "Carisma", key: "carisma" }
+                  ].map((stat) => (
+                    <div key={stat.key} className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-2 flex flex-col items-center">
+                      <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold mb-1">{stat.label.substring(0, 3)}</span>
+                      <span className="text-2xl font-serif text-amber-50 font-bold mb-1">
+                        {campaign.character.stats?.[stat.key] || 10}
+                      </span>
+                      <span className="text-xs font-semibold bg-slate-950 px-2 py-0.5 rounded-full text-amber-500/90 border border-slate-800">
+                        {calculateModifier(campaign.character.stats?.[stat.key] || 10)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Lore & Aspects */}
+              <div className="space-y-4 pt-4 border-t border-slate-800 text-sm">
+                {campaign.character.physicalDescription && (
+                  <div>
+                    <h4 className="text-amber-600/80 font-serif mb-1 uppercase tracking-wider text-xs font-bold">Aspetto Fisico</h4>
+                    <p className="text-slate-300 leading-relaxed font-sans bg-slate-950/30 p-3 rounded-lg border border-slate-800/50">
+                      {campaign.character.physicalDescription}
+                    </p>
+                  </div>
+                )}
+                {campaign.character.background && (
+                  <div>
+                    <h4 className="text-amber-600/80 font-serif mb-1 uppercase tracking-wider text-xs font-bold">Background</h4>
+                    <p className="text-slate-300 leading-relaxed font-sans italic bg-slate-950/30 p-3 rounded-lg border border-slate-800/50">
+                      {campaign.character.background}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

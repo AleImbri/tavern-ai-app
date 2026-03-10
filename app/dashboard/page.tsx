@@ -167,7 +167,7 @@ export default function DashboardPage() {
                                 if (validationError) setValidationError("");
                             }}
                             className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-600/50 text-slate-100 placeholder-slate-600 font-sans transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            placeholder="Es. Il Ritrovamento di Phandalin..."
+                            placeholder="Es. Il Mistero di Eldoria..."
                             disabled={isCreating || campaigns.length >= 10}
                         />
                         <button
