@@ -192,7 +192,7 @@ export default function CampaignChat() {
       physicalDescription: physicalDesc.trim(),
       level: 1,
       xp: 0,
-      gold: 0,
+      coins: { cp: 0, sp: 0, gp: 0, pp: 0 },
       currentHp: maxHp,
       maxHp: maxHp,
       inventory: [
@@ -513,7 +513,7 @@ export default function CampaignChat() {
               </div>
 
               {/* Tokens Grid */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                 <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-3 text-center flex flex-col justify-center">
                   <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1">Livello</span>
                   <span className="text-xl font-bold text-slate-200">{campaign.character.level}</span>
@@ -527,19 +527,15 @@ export default function CampaignChat() {
                     </span>
                   </div>
                 </div>
-                <div className="bg-slate-950/50 border border-red-900/30 rounded-lg p-3 text-center flex flex-col justify-center col-span-2">
-                  <span className="text-xs text-red-500/70 uppercase tracking-wider font-semibold mb-1">Punti Ferita</span>
-                  <span className="text-xl font-bold text-red-400">
-                    {campaign.character.currentHp} <span className="text-slate-500 text-sm">/ {campaign.character.maxHp}</span>
-                  </span>
-                </div>
                 <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-3 text-center flex flex-col justify-center">
                   <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1">XP</span>
                   <span className="text-lg font-bold text-slate-300">{campaign.character.xp}</span>
                 </div>
-                <div className="bg-slate-950/50 border border-yellow-900/30 rounded-lg p-3 text-center flex flex-col justify-center">
-                  <span className="text-xs text-yellow-600/70 uppercase tracking-wider font-semibold mb-1">Oro</span>
-                  <span className="text-lg font-bold text-yellow-500">{campaign.character.gold}</span>
+                <div className="bg-slate-950/50 border border-red-900/30 rounded-lg p-3 text-center flex flex-col justify-center col-span-3">
+                  <span className="text-xs text-red-500/70 uppercase tracking-wider font-semibold mb-1">Punti Ferita</span>
+                  <span className="text-xl font-bold text-red-400">
+                    {campaign.character.currentHp} <span className="text-slate-500 text-sm">/ {campaign.character.maxHp}</span>
+                  </span>
                 </div>
               </div>
 
@@ -617,7 +613,52 @@ export default function CampaignChat() {
               </button>
             </div>
 
-            <div className="p-6 space-y-4 flex-1">
+            <div className="p-6 space-y-6 flex-1">
+
+              {/* Portamonete */}
+              <div className="bg-slate-950/40 p-4 rounded-xl border border-slate-800/80">
+                <h3 className="text-xs font-serif font-bold text-slate-400 uppercase tracking-widest mb-4 text-center border-b border-slate-800/50 pb-2">Portamonete</h3>
+                <div className="flex justify-around items-end">
+                  {/* MR (Rame) */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center bg-gradient-to-br from-orange-700 to-amber-900 border border-amber-900/50 mb-2 relative">
+                      <svg className="w-5 h-5 text-black/30 absolute" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <span className="text-[10px] text-slate-500 font-bold tracking-wider">MR</span>
+                    <span className="text-sm font-bold text-orange-600">{campaign.character?.coins?.cp || 0}</span>
+                  </div>
+
+                  {/* MA (Argento) */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center bg-gradient-to-br from-slate-300 to-gray-500 border border-slate-400/50 mb-2 relative">
+                      <svg className="w-5 h-5 text-black/20 absolute" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <span className="text-[10px] text-slate-500 font-bold tracking-wider">MA</span>
+                    <span className="text-sm font-bold text-slate-400">{campaign.character?.coins?.sp || 0}</span>
+                  </div>
+
+                  {/* MO (Oro) */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center bg-gradient-to-br from-yellow-400 to-amber-600 border border-amber-500/50 mb-2 relative">
+                      <svg className="w-5 h-5 text-amber-900/40 absolute" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <span className="text-[10px] text-yellow-600/70 font-bold tracking-wider">MO</span>
+                    <span className="text-base font-bold text-yellow-500">{campaign.character?.coins?.gp || 0}</span>
+                  </div>
+
+                  {/* MP (Platino) */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center bg-gradient-to-br from-cyan-100 to-slate-300 border border-slate-300/50 mb-2 relative">
+                      <svg className="w-5 h-5 text-slate-500/40 absolute" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <span className="text-[10px] text-cyan-700/60 font-bold tracking-wider">MP</span>
+                    <span className="text-sm font-bold text-cyan-200">{campaign.character?.coins?.pp || 0}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Inventario List */}
+              <h3 className="text-xs font-serif font-bold text-slate-400 uppercase tracking-widest mt-2 border-b border-slate-800/50 pb-2">Borsa Equipaggiamento</h3>
               {!campaign.character.inventory || campaign.character.inventory.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 text-slate-500 space-y-3">
                   <svg className="w-12 h-12 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
