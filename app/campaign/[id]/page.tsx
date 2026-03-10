@@ -139,11 +139,99 @@ export default function CampaignChat() {
       const data = await res.json();
 
       if (res.ok) {
+        let aiMessage = data.response;
+        let aiData: any = null;
+
+        try {
+          aiData = JSON.parse(data.response);
+          aiMessage = aiData.message || data.response;
+        } catch (e) {
+          console.error("Failed to parse AI JSON response:", e);
+        }
+
         await addDoc(collection(db, "campaigns", campaignId, "messages"), {
           role: "model",
-          content: data.response,
+          content: aiMessage,
           timestamp: serverTimestamp(),
         });
+
+        // Apply state updates if present
+        if (aiData?.state_updates && campaign?.character) {
+          let updatedChar = { ...campaign.character };
+          const su = aiData.state_updates;
+
+          // HP Update
+          if (su.hpDelta) {
+            updatedChar.currentHp = Math.min(
+              Math.max(0, updatedChar.currentHp + su.hpDelta),
+              updatedChar.maxHp
+            );
+          }
+
+          // XP & Level Update
+          if (su.xpDelta && su.xpDelta > 0) {
+            updatedChar.xp += su.xpDelta;
+
+            // D&D 5e Thresholds
+            const xp = updatedChar.xp;
+            let newLevel = 1;
+            if (xp >= 6500) newLevel = 5;
+            else if (xp >= 2700) newLevel = 4;
+            else if (xp >= 900) newLevel = 3;
+            else if (xp >= 300) newLevel = 2;
+
+            if (newLevel > updatedChar.level) {
+              updatedChar.level = newLevel;
+            }
+          }
+
+          // Coins Update
+          if (su.coinsDelta && updatedChar.coins) {
+            updatedChar.coins = {
+              cp: Math.max(0, updatedChar.coins.cp + (su.coinsDelta.cp || 0)),
+              sp: Math.max(0, updatedChar.coins.sp + (su.coinsDelta.sp || 0)),
+              gp: Math.max(0, updatedChar.coins.gp + (su.coinsDelta.gp || 0)),
+              pp: Math.max(0, updatedChar.coins.pp + (su.coinsDelta.pp || 0)),
+            };
+          }
+
+          // Inventory Updates
+          let currentInv = [...(updatedChar.inventory || [])];
+
+          if (su.inventoryAdd && Array.isArray(su.inventoryAdd)) {
+            su.inventoryAdd.forEach((newItem: any) => {
+              const existing = currentInv.find(i => i.name.toLowerCase() === newItem.name.toLowerCase());
+              if (existing) {
+                existing.quantity += (newItem.quantity || 1);
+              } else {
+                currentInv.push({ name: newItem.name, quantity: newItem.quantity || 1 });
+              }
+            });
+          }
+
+          if (su.inventoryRemove && Array.isArray(su.inventoryRemove)) {
+            su.inventoryRemove.forEach((remItem: any) => {
+              const existing = currentInv.find(i => i.name.toLowerCase() === remItem.name.toLowerCase());
+              if (existing) {
+                existing.quantity -= (remItem.quantity || 1);
+              }
+            });
+            // Clean up 0 or negative items
+            currentInv = currentInv.filter(i => i.quantity > 0);
+          }
+
+          updatedChar.inventory = currentInv;
+
+          // Sync to Firestore
+          try {
+            await updateDoc(doc(db, "campaigns", campaignId), {
+              character: updatedChar
+            });
+          } catch (err) {
+            console.error("Failed to sync character state updates:", err);
+          }
+        }
+
       } else {
         console.error("API Error:", data.error);
         setMessages((prev) => [...prev, { role: "model", content: "*(Una forza oscura impedisce al DM di comunicare... Riprova più tardi)*" }]);
