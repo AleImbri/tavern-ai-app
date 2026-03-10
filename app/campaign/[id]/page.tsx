@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Wheat, Sword, Crown, Gem } from "lucide-react";
+import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, useParams } from "next/navigation";
 
@@ -622,36 +622,28 @@ export default function CampaignChat() {
                 <div className="flex justify-around items-start">
                   {/* MR (Rame) */}
                   <div className="flex flex-col items-center">
-                    <div className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center bg-gradient-to-br from-orange-700 to-amber-900 border border-amber-900/50 mb-2 relative">
-                      <Wheat className="w-5 h-5 text-black/40 absolute" />
-                    </div>
+                    <Image src="/coins/copper.png" alt="Rame" width={48} height={48} className="w-12 h-12 object-contain hover:scale-110 transition-transform mb-2" />
                     <span className="text-[10px] text-slate-400 font-sans uppercase tracking-widest">MR</span>
                     <span className="text-sm text-slate-200 font-sans font-medium">{campaign.character?.coins?.cp || 0}</span>
                   </div>
 
                   {/* MA (Argento) */}
                   <div className="flex flex-col items-center">
-                    <div className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center bg-gradient-to-br from-slate-300 to-gray-500 border border-slate-400/50 mb-2 relative">
-                      <Sword className="w-5 h-5 text-black/40 absolute" />
-                    </div>
+                    <Image src="/coins/silver.png" alt="Argento" width={48} height={48} className="w-12 h-12 object-contain hover:scale-110 transition-transform mb-2" />
                     <span className="text-[10px] text-slate-400 font-sans uppercase tracking-widest">MA</span>
                     <span className="text-sm text-slate-200 font-sans font-medium">{campaign.character?.coins?.sp || 0}</span>
                   </div>
 
                   {/* MO (Oro) */}
                   <div className="flex flex-col items-center">
-                    <div className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center bg-gradient-to-br from-yellow-400 to-amber-600 border border-amber-500/50 mb-2 relative">
-                      <Crown className="w-5 h-5 text-amber-900/40 absolute" />
-                    </div>
+                    <Image src="/coins/gold.png" alt="Oro" width={48} height={48} className="w-12 h-12 object-contain hover:scale-110 transition-transform mb-2" />
                     <span className="text-[10px] text-slate-400 font-sans uppercase tracking-widest">MO</span>
                     <span className="text-sm text-slate-200 font-sans font-medium">{campaign.character?.coins?.gp || 0}</span>
                   </div>
 
                   {/* MP (Platino) */}
                   <div className="flex flex-col items-center">
-                    <div className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center bg-gradient-to-br from-cyan-100 to-slate-300 border border-slate-300/50 mb-2 relative">
-                      <Gem className="w-5 h-5 text-slate-500/40 absolute" />
-                    </div>
+                    <Image src="/coins/platinum.png" alt="Platino" width={48} height={48} className="w-12 h-12 object-contain hover:scale-110 transition-transform mb-2" />
                     <span className="text-[10px] text-slate-400 font-sans uppercase tracking-widest">MP</span>
                     <span className="text-sm text-slate-200 font-sans font-medium">{campaign.character?.coins?.pp || 0}</span>
                   </div>
