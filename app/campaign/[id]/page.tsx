@@ -619,31 +619,31 @@ export default function CampaignChat() {
               {/* Portamonete */}
               <div className="bg-slate-950/40 p-4 rounded-xl border border-slate-800/80">
                 <h3 className="text-xs font-serif font-bold text-slate-400 uppercase tracking-widest mb-4 text-center border-b border-slate-800/50 pb-2">Portamonete</h3>
-                <div className="flex justify-around items-start">
+                <div className="grid grid-cols-2 gap-6 justify-items-center py-4">
                   {/* MR (Rame) */}
                   <div className="flex flex-col items-center">
-                    <Image src="/coins/copper.png" alt="Rame" width={112} height={112} className="w-28 h-28 object-contain hover:scale-110 transition-transform mb-2" />
+                    <Image src="/coins/copper.png" alt="Rame" width={144} height={144} className="w-36 h-36 object-contain scale-[1.5] hover:scale-[1.65] transition-transform mb-2 drop-shadow-lg" />
                     <span className="text-[10px] text-slate-400 font-sans uppercase tracking-widest">MR</span>
                     <span className="text-sm text-slate-200 font-sans font-medium">{campaign.character?.coins?.cp || 0}</span>
                   </div>
 
                   {/* MA (Argento) */}
                   <div className="flex flex-col items-center">
-                    <Image src="/coins/silver.png" alt="Argento" width={112} height={112} className="w-28 h-28 object-contain hover:scale-110 transition-transform mb-2" />
+                    <Image src="/coins/silver.png" alt="Argento" width={144} height={144} className="w-36 h-36 object-contain scale-[1.5] hover:scale-[1.65] transition-transform mb-2 drop-shadow-lg" />
                     <span className="text-[10px] text-slate-400 font-sans uppercase tracking-widest">MA</span>
                     <span className="text-sm text-slate-200 font-sans font-medium">{campaign.character?.coins?.sp || 0}</span>
                   </div>
 
                   {/* MO (Oro) */}
                   <div className="flex flex-col items-center">
-                    <Image src="/coins/gold.png" alt="Oro" width={112} height={112} className="w-28 h-28 object-contain hover:scale-110 transition-transform mb-2" />
+                    <Image src="/coins/gold.png" alt="Oro" width={144} height={144} className="w-36 h-36 object-contain scale-[1.5] hover:scale-[1.65] transition-transform mb-2 drop-shadow-lg" />
                     <span className="text-[10px] text-slate-400 font-sans uppercase tracking-widest">MO</span>
                     <span className="text-sm text-slate-200 font-sans font-medium">{campaign.character?.coins?.gp || 0}</span>
                   </div>
 
                   {/* MP (Platino) */}
                   <div className="flex flex-col items-center">
-                    <Image src="/coins/platinum.png" alt="Platino" width={112} height={112} className="w-28 h-28 object-contain hover:scale-110 transition-transform mb-2" />
+                    <Image src="/coins/platinum.png" alt="Platino" width={144} height={144} className="w-36 h-36 object-contain scale-[1.5] hover:scale-[1.65] transition-transform mb-2 drop-shadow-lg" />
                     <span className="text-[10px] text-slate-400 font-sans uppercase tracking-widest">MP</span>
                     <span className="text-sm text-slate-200 font-sans font-medium">{campaign.character?.coins?.pp || 0}</span>
                   </div>
