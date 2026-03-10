@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { Wheat, Sword, Crown, Gem } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, useParams } from "next/navigation";
 
@@ -618,41 +619,41 @@ export default function CampaignChat() {
               {/* Portamonete */}
               <div className="bg-slate-950/40 p-4 rounded-xl border border-slate-800/80">
                 <h3 className="text-xs font-serif font-bold text-slate-400 uppercase tracking-widest mb-4 text-center border-b border-slate-800/50 pb-2">Portamonete</h3>
-                <div className="flex justify-around items-end">
+                <div className="flex justify-around items-start">
                   {/* MR (Rame) */}
                   <div className="flex flex-col items-center">
                     <div className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center bg-gradient-to-br from-orange-700 to-amber-900 border border-amber-900/50 mb-2 relative">
-                      <svg className="w-5 h-5 text-black/30 absolute" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <Wheat className="w-5 h-5 text-black/40 absolute" />
                     </div>
-                    <span className="text-[10px] text-slate-500 font-bold tracking-wider">MR</span>
-                    <span className="text-sm font-bold text-orange-600">{campaign.character?.coins?.cp || 0}</span>
+                    <span className="text-[10px] text-slate-400 font-sans uppercase tracking-widest">MR</span>
+                    <span className="text-sm text-slate-200 font-sans font-medium">{campaign.character?.coins?.cp || 0}</span>
                   </div>
 
                   {/* MA (Argento) */}
                   <div className="flex flex-col items-center">
                     <div className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center bg-gradient-to-br from-slate-300 to-gray-500 border border-slate-400/50 mb-2 relative">
-                      <svg className="w-5 h-5 text-black/20 absolute" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <Sword className="w-5 h-5 text-black/40 absolute" />
                     </div>
-                    <span className="text-[10px] text-slate-500 font-bold tracking-wider">MA</span>
-                    <span className="text-sm font-bold text-slate-400">{campaign.character?.coins?.sp || 0}</span>
+                    <span className="text-[10px] text-slate-400 font-sans uppercase tracking-widest">MA</span>
+                    <span className="text-sm text-slate-200 font-sans font-medium">{campaign.character?.coins?.sp || 0}</span>
                   </div>
 
                   {/* MO (Oro) */}
                   <div className="flex flex-col items-center">
                     <div className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center bg-gradient-to-br from-yellow-400 to-amber-600 border border-amber-500/50 mb-2 relative">
-                      <svg className="w-5 h-5 text-amber-900/40 absolute" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <Crown className="w-5 h-5 text-amber-900/40 absolute" />
                     </div>
-                    <span className="text-[10px] text-yellow-600/70 font-bold tracking-wider">MO</span>
-                    <span className="text-base font-bold text-yellow-500">{campaign.character?.coins?.gp || 0}</span>
+                    <span className="text-[10px] text-slate-400 font-sans uppercase tracking-widest">MO</span>
+                    <span className="text-sm text-slate-200 font-sans font-medium">{campaign.character?.coins?.gp || 0}</span>
                   </div>
 
                   {/* MP (Platino) */}
                   <div className="flex flex-col items-center">
                     <div className="w-10 h-10 rounded-full shadow-lg flex items-center justify-center bg-gradient-to-br from-cyan-100 to-slate-300 border border-slate-300/50 mb-2 relative">
-                      <svg className="w-5 h-5 text-slate-500/40 absolute" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <Gem className="w-5 h-5 text-slate-500/40 absolute" />
                     </div>
-                    <span className="text-[10px] text-cyan-700/60 font-bold tracking-wider">MP</span>
-                    <span className="text-sm font-bold text-cyan-200">{campaign.character?.coins?.pp || 0}</span>
+                    <span className="text-[10px] text-slate-400 font-sans uppercase tracking-widest">MP</span>
+                    <span className="text-sm text-slate-200 font-sans font-medium">{campaign.character?.coins?.pp || 0}</span>
                   </div>
                 </div>
               </div>
