@@ -23,6 +23,7 @@ export default function CampaignChat() {
   const [campaign, setCampaign] = useState<any>(null);
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isInventoryOpen, setIsInventoryOpen] = useState(false);
 
   // Character Form State
   const [charName, setCharName] = useState("");
@@ -193,7 +194,14 @@ export default function CampaignChat() {
       xp: 0,
       gold: 0,
       currentHp: maxHp,
-      maxHp: maxHp
+      maxHp: maxHp,
+      inventory: [
+        { name: 'Sacco a pelo', quantity: 1 },
+        { name: 'Acciarino e pietra focaia', quantity: 1 },
+        { name: 'Torcia', quantity: 10 },
+        { name: 'Razione', quantity: 10 },
+        { name: 'Otre', quantity: 1 }
+      ]
     };
 
     try {
@@ -361,28 +369,37 @@ export default function CampaignChat() {
         <button
           onClick={() => router.push("/dashboard")}
           className="text-amber-500 hover:text-amber-400 font-serif flex items-center gap-1 transition-colors bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50 hover:bg-slate-800"
+          title="Torna alla Gilda"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-          <span className="hidden sm:inline">Torna alla Gilda</span>
+          <svg className="w-4 h-4 md:w-5 md:h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+          <span className="hidden md:inline">Torna alla Gilda</span>
         </button>
 
-        <div className="flex items-center justify-center">
-          <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 bg-clip-text text-transparent drop-shadow-sm uppercase tracking-widest font-serif">
+        <div className="flex items-center justify-center truncate px-2">
+          <h1 className="text-lg md:text-2xl font-bold bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 bg-clip-text text-transparent drop-shadow-sm uppercase tracking-widest font-serif truncate">
             {campaign?.title || "TavernAI"}
           </h1>
-          <span className="ml-3 px-2 py-0.5 rounded text-xs font-semibold bg-amber-900/30 text-amber-500 border border-amber-800/50 hidden md:inline-block">
+          <span className="ml-2 px-2 py-0.5 rounded text-[10px] md:text-xs font-semibold bg-amber-900/30 text-amber-500 border border-amber-800/50 hidden md:inline-block shrink-0">
             5E MASTER
           </span>
         </div>
 
-        <div className="flex justify-end min-w-[120px]">
+        <div className="flex justify-end gap-2 shrink-0">
+          <button
+            onClick={() => setIsInventoryOpen(true)}
+            className="text-slate-300 hover:text-amber-400 font-serif flex items-center gap-2 transition-colors bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50 hover:bg-slate-800"
+            title="Zaino"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+            <span className="hidden md:inline text-sm font-semibold">Zaino</span>
+          </button>
           <button
             onClick={() => setIsSheetOpen(true)}
             className="text-slate-300 hover:text-amber-400 font-serif flex items-center gap-2 transition-colors bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50 hover:bg-slate-800"
             title="Scheda Personaggio"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-            <span className="hidden sm:inline text-sm font-semibold">Scheda</span>
+            <span className="hidden md:inline text-sm font-semibold">Scheda</span>
           </button>
         </div>
       </header>
@@ -570,6 +587,54 @@ export default function CampaignChat() {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Inventory Modal / Sidebar */}
+      {isInventoryOpen && campaign?.character && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setIsInventoryOpen(false)}
+          ></div>
+
+          {/* Sidebar */}
+          <div className="relative w-full max-w-sm h-full bg-slate-900 border-l border-slate-700/80 shadow-2xl shadow-black overflow-y-auto flex flex-col transform transition-transform duration-300 ease-in-out">
+            <div className="p-4 border-b border-slate-800 flex justify-between items-center sticky top-0 bg-slate-900/95 backdrop-blur-md z-10">
+              <h2 className="text-xl font-serif font-bold text-amber-500 tracking-wider flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                Zaino
+              </h2>
+              <button
+                onClick={() => setIsInventoryOpen(false)}
+                className="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg p-2 transition-colors"
+                title="Chiudi Zaino"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4 flex-1">
+              {!campaign.character.inventory || campaign.character.inventory.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-slate-500 space-y-3">
+                  <svg className="w-12 h-12 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
+                  <p className="font-serif italic text-lg">Lo zaino è vuoto</p>
+                </div>
+              ) : (
+                <ul className="space-y-3">
+                  {campaign.character.inventory.map((item: any, idx: number) => (
+                    <li key={idx} className="bg-slate-950/50 border border-slate-800/80 rounded-lg p-3 flex justify-between items-center hover:bg-slate-800/50 transition-colors">
+                      <span className="text-slate-200 font-sans tracking-wide">{item.name}</span>
+                      <span className="text-amber-500/90 font-bold font-serif bg-amber-900/20 px-2 py-0.5 rounded border border-amber-800/30">
+                        x{item.quantity}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         </div>
