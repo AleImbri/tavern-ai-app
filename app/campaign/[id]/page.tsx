@@ -122,12 +122,14 @@ export default function CampaignChat() {
         content: userInput,
         timestamp: serverTimestamp(),
       });
-      const history = messages.map(msg => ({
-        id: msg.id,
-        role: msg.role,
-        parts: [{ text: msg.content }],
-        isSummarized: (msg as any).isSummarized || false
-      }));
+      const history = messages
+        .filter(msg => !(msg as any).isSummarized)
+        .map(msg => ({
+          id: msg.id,
+          role: msg.role,
+          parts: [{ text: msg.content }],
+          isSummarized: false
+        }));
 
       const res = await fetch("/api/chat", {
         method: "POST",
