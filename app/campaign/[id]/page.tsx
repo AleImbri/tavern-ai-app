@@ -86,6 +86,7 @@ export default function CampaignChat() {
         id: d.id,
         role: d.data().role,
         content: d.data().content,
+        isSummarized: d.data().isSummarized || false
       }));
       setMessages(msgs);
       setIsMessagesLoading(false);
@@ -122,8 +123,10 @@ export default function CampaignChat() {
         timestamp: serverTimestamp(),
       });
       const history = messages.map(msg => ({
+        id: msg.id,
         role: msg.role,
-        parts: [{ text: msg.content }]
+        parts: [{ text: msg.content }],
+        isSummarized: (msg as any).isSummarized || false
       }));
 
       const res = await fetch("/api/chat", {
@@ -134,6 +137,8 @@ export default function CampaignChat() {
         body: JSON.stringify({
           history,
           message: userInput,
+          summary: campaign?.summary || "",
+          character: campaign?.character
         }),
       });
 
@@ -155,6 +160,13 @@ export default function CampaignChat() {
           content: aiMessage,
           timestamp: serverTimestamp(),
         });
+
+        // Sync to Firestore: Character State + Summary
+        let updatePayload: any = {};
+
+        if (data.newSummary) {
+          updatePayload.summary = data.newSummary;
+        }
 
         // Apply state updates if present
         if (aiData?.state_updates && campaign?.character) {
@@ -223,14 +235,28 @@ export default function CampaignChat() {
 
           updatedChar.inventory = currentInv;
 
-          // Sync to Firestore
-          try {
-            await updateDoc(doc(db, "campaigns", campaignId), {
-              character: updatedChar
-            });
-          } catch (err) {
-            console.error("Failed to sync character state updates:", err);
+          updatePayload.character = updatedChar;
+        }
+
+        try {
+          if (Object.keys(updatePayload).length > 0) {
+            await updateDoc(doc(db, "campaigns", campaignId), updatePayload);
           }
+
+          // Mark summarized messages
+          if (data.summarizedMessageIds && data.summarizedMessageIds.length > 0) {
+            data.summarizedMessageIds.forEach(async (msgId: string) => {
+              try {
+                await updateDoc(doc(db, "campaigns", campaignId, "messages", msgId), {
+                  isSummarized: true
+                });
+              } catch (e) {
+                console.error("Failed to mark message as summarized:", e);
+              }
+            });
+          }
+        } catch (err) {
+          console.error("Failed to sync character state updates:", err);
         }
 
       } else {
