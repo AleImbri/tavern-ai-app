@@ -163,103 +163,109 @@ export default function CampaignChat() {
           timestamp: serverTimestamp(),
         });
 
-        // Sync to Firestore: Character State + Summary
-        let updatePayload: any = {};
+        // Unblock UI immediately
+        setIsLoading(false);
 
-        if (data.newSummary) {
-          updatePayload.summary = data.newSummary;
-        }
+        // Background sync task
+        const syncBackgroundState = async () => {
+          let updatePayload: any = {};
+
+          if (data.newSummary) {
+            updatePayload.summary = data.newSummary;
+          }
 
         // Apply state updates if present
-        if (aiData?.state_updates && campaign?.character) {
-          let updatedChar = { ...campaign.character };
-          const su = aiData.state_updates;
+          if (aiData?.state_updates && campaign?.character) {
+            let updatedChar = { ...campaign.character };
+            const su = aiData.state_updates;
 
           // HP Update
-          if (su.hpDelta) {
-            updatedChar.currentHp = Math.min(
-              Math.max(0, updatedChar.currentHp + su.hpDelta),
-              updatedChar.maxHp
-            );
-          }
+            if (su.hpDelta) {
+              updatedChar.currentHp = Math.min(
+                Math.max(0, updatedChar.currentHp + su.hpDelta),
+                updatedChar.maxHp
+              );
+            }
 
           // XP & Level Update
-          if (su.xpDelta && su.xpDelta > 0) {
-            updatedChar.xp += su.xpDelta;
+            if (su.xpDelta && su.xpDelta > 0) {
+              updatedChar.xp += su.xpDelta;
 
             // D&D 5e Thresholds
-            const xp = updatedChar.xp;
-            let newLevel = 1;
-            if (xp >= 6500) newLevel = 5;
-            else if (xp >= 2700) newLevel = 4;
-            else if (xp >= 900) newLevel = 3;
-            else if (xp >= 300) newLevel = 2;
+              const xp = updatedChar.xp;
+              let newLevel = 1;
+              if (xp >= 6500) newLevel = 5;
+              else if (xp >= 2700) newLevel = 4;
+              else if (xp >= 900) newLevel = 3;
+              else if (xp >= 300) newLevel = 2;
 
-            if (newLevel > updatedChar.level) {
-              updatedChar.level = newLevel;
+              if (newLevel > updatedChar.level) {
+                updatedChar.level = newLevel;
+              }
             }
-          }
 
           // Coins Update
-          if (su.coinsDelta && updatedChar.coins) {
-            updatedChar.coins = {
-              cp: Math.max(0, updatedChar.coins.cp + (su.coinsDelta.cp || 0)),
-              sp: Math.max(0, updatedChar.coins.sp + (su.coinsDelta.sp || 0)),
-              gp: Math.max(0, updatedChar.coins.gp + (su.coinsDelta.gp || 0)),
-              pp: Math.max(0, updatedChar.coins.pp + (su.coinsDelta.pp || 0)),
-            };
-          }
+            if (su.coinsDelta && updatedChar.coins) {
+              updatedChar.coins = {
+                cp: Math.max(0, updatedChar.coins.cp + (su.coinsDelta.cp || 0)),
+                sp: Math.max(0, updatedChar.coins.sp + (su.coinsDelta.sp || 0)),
+                gp: Math.max(0, updatedChar.coins.gp + (su.coinsDelta.gp || 0)),
+                pp: Math.max(0, updatedChar.coins.pp + (su.coinsDelta.pp || 0)),
+              };
+            }
 
           // Inventory Updates
-          let currentInv = [...(updatedChar.inventory || [])];
+            let currentInv = [...(updatedChar.inventory || [])];
 
-          if (su.inventoryAdd && Array.isArray(su.inventoryAdd)) {
-            su.inventoryAdd.forEach((newItem: any) => {
-              const existing = currentInv.find(i => i.name.toLowerCase() === newItem.name.toLowerCase());
-              if (existing) {
-                existing.quantity += (newItem.quantity || 1);
-              } else {
-                currentInv.push({ name: newItem.name, quantity: newItem.quantity || 1 });
-              }
-            });
-          }
+            if (su.inventoryAdd && Array.isArray(su.inventoryAdd)) {
+              su.inventoryAdd.forEach((newItem: any) => {
+                const existing = currentInv.find(i => i.name.toLowerCase() === newItem.name.toLowerCase());
+                if (existing) {
+                  existing.quantity += (newItem.quantity || 1);
+                } else {
+                  currentInv.push({ name: newItem.name, quantity: newItem.quantity || 1 });
+                }
+              });
+            }
 
-          if (su.inventoryRemove && Array.isArray(su.inventoryRemove)) {
-            su.inventoryRemove.forEach((remItem: any) => {
-              const existing = currentInv.find(i => i.name.toLowerCase() === remItem.name.toLowerCase());
-              if (existing) {
-                existing.quantity -= (remItem.quantity || 1);
-              }
-            });
+            if (su.inventoryRemove && Array.isArray(su.inventoryRemove)) {
+              su.inventoryRemove.forEach((remItem: any) => {
+                const existing = currentInv.find(i => i.name.toLowerCase() === remItem.name.toLowerCase());
+                if (existing) {
+                  existing.quantity -= (remItem.quantity || 1);
+                }
+              });
             // Clean up 0 or negative items
-            currentInv = currentInv.filter(i => i.quantity > 0);
+              currentInv = currentInv.filter(i => i.quantity > 0);
+            }
+
+            updatedChar.inventory = currentInv;
+
+            updatePayload.character = updatedChar;
           }
 
-          updatedChar.inventory = currentInv;
+          try {
+            const promises = [];
+            if (Object.keys(updatePayload).length > 0) {
+              promises.push(updateDoc(doc(db, "campaigns", campaignId), updatePayload));
+            }
 
-          updatePayload.character = updatedChar;
-        }
-
-        try {
-          if (Object.keys(updatePayload).length > 0) {
-            await updateDoc(doc(db, "campaigns", campaignId), updatePayload);
-          }
-
-          // Mark summarized messages
-          if (data.summarizedMessageIds && data.summarizedMessageIds.length > 0) {
-            data.summarizedMessageIds.forEach(async (msgId: string) => {
-              try {
-                await updateDoc(doc(db, "campaigns", campaignId, "messages", msgId), {
+            if (data.summarizedMessageIds && data.summarizedMessageIds.length > 0) {
+              data.summarizedMessageIds.forEach((msgId: string) => {
+                promises.push(updateDoc(doc(db, "campaigns", campaignId, "messages", msgId), {
                   isSummarized: true
-                });
-              } catch (e) {
-                console.error("Failed to mark message as summarized:", e);
-              }
-            });
+                }));
+              });
+            }
+
+            await Promise.all(promises);
+          } catch (err) {
+            console.error("Failed to sync background updates:", err);
           }
-        } catch (err) {
-          console.error("Failed to sync character state updates:", err);
-        }
+        };
+
+        // Fire and forget
+        syncBackgroundState().catch(console.error);
 
       } else {
         console.error("API Error:", data.error);
@@ -536,12 +542,20 @@ export default function CampaignChat() {
                   : "bg-gradient-to-br from-indigo-950/40 to-slate-900/80 text-amber-50 border border-indigo-900/30 rounded-bl-sm font-serif text-lg leading-relaxed shadow-indigo-950/20"
                   }`}
               >
+                {msg.role === "user" && campaign?.character?.name && (
+                  <div className="flex items-center justify-end mb-2 text-amber-500/80 text-sm font-sans uppercase tracking-wider font-semibold">
+                    {campaign.character.name}
+                    <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                )}
                 {msg.role === "model" && (
                   <div className="flex items-center mb-2 text-indigo-400/80 text-sm font-sans uppercase tracking-wider font-semibold">
                     <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
-                    Dungeon Master
+                    Master
                   </div>
                 )}
                 {/* Use ReactMarkdown to render the content */}
@@ -554,7 +568,7 @@ export default function CampaignChat() {
           {isLoading && (
             <div className="flex justify-start w-full">
               <div className="max-w-[85%] md:max-w-[75%] rounded-xl p-4 bg-gradient-to-br from-indigo-950/20 to-slate-900/40 border border-indigo-900/20 rounded-bl-sm font-serif italic text-slate-400 flex items-center space-x-2">
-                <span>Il Master sta scrivendo il fato</span>
+                <span>Il Master sta pensando</span>
                 <span className="flex space-x-1">
                   <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
                   <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
